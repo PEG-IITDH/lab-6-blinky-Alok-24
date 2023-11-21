@@ -1,27 +1,3 @@
-//*****************************************************************************
-//
-// usb_dev_keyboard.c - Main routines for the keyboard example.
-//
-// Copyright (c) 2011-2020 Texas Instruments Incorporated.  All rights reserved.
-// Software License Agreement
-// 
-// Texas Instruments (TI) is supplying this software for use solely and
-// exclusively on TI's microcontroller products. The software is owned by
-// TI and/or its suppliers, and is protected under applicable copyright
-// laws. You may not combine this software with "viral" open-source
-// software in order to form a larger program.
-// 
-// THIS SOFTWARE IS PROVIDED "AS IS" AND WITH ALL FAULTS.
-// NO WARRANTIES, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT
-// NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. TI SHALL NOT, UNDER ANY
-// CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
-// DAMAGES, FOR ANY REASON WHATSOEVER.
-// 
-// This is part of revision 2.2.0.295 of the EK-TM4C123GXL Firmware Package.
-//
-//*****************************************************************************
-
 #include <stdbool.h>
 #include <stdint.h>
 #include "inc/hw_memmap.h"
@@ -46,42 +22,14 @@
 #include "utils/uartstdio.h"
 #include "utils/ustdlib.h"
 #include "usb_keyb_structs.h"
-
-//*****************************************************************************
-//
-//! \addtogroup example_list
-//! <h1>USB HID Keyboard Device (usb_dev_keyboard)</h1>
-//!
-//! This example turns the EK-TM4C123GXL LaunchPad into a USB keyboard
-//! supporting the Human Interface Device class.  When either the SW1/SW2
-//! push button is pressed, a sequence of key presses is simulated to type a
-//! string.  Care should be taken to ensure that the active window can safely
-//! receive the text; enter is not pressed at any point so no actions are
-//! attempted by the host if a terminal window is used (for example).  The
-//! status LED is used to indicate the current Caps Lock state and is updated
-//! in response to any other keyboard attached to the same USB host system.
-//!
-//! The device implemented by this application also supports USB remote wakeup
-//! allowing it to request the host to reactivate a suspended bus.  If the bus
-//! is suspended (as indicated on the application display), pressing the
-//! push button will request a remote wakeup assuming the host has not
-//! specifically disabled such requests.
-//
-//*****************************************************************************
-
-//*****************************************************************************
-//
-// The system tick timer period.
-//
-//*****************************************************************************
 #define SYSTICKS_PER_SECOND     100
 
-//*****************************************************************************
+//***************************
 //
 // A mapping from the ASCII value received from the UART to the corresponding
 // USB HID usage code.
 //
-//*****************************************************************************
+//***************************
 static const int8_t g_ppi8KeyUsageCodes[][2] =
 {
     { 0, HID_KEYB_USAGE_SPACE },                       //   0x20
@@ -186,51 +134,51 @@ static const int8_t g_ppi8KeyUsageCodes[][2] =
     { 0, HID_KEYB_USAGE_ENTER },                       // LF 0x0A
 };
 
-//*****************************************************************************
+//***************************
 //
 // This global indicates whether or not we are connected to a USB host.
 //
-//*****************************************************************************
+//***************************
 volatile bool g_bConnected = false;
 
-//*****************************************************************************
+//***************************
 //
 // This global indicates whether or not the USB bus is currently in the suspend
 // state.
 //
-//*****************************************************************************
+//***************************
 volatile bool g_bSuspended = false;
 
-//*****************************************************************************
+//***************************
 //
 // Global system tick counter holds elapsed time since the application started
 // expressed in 100ths of a second.
 //
-//*****************************************************************************
+//***************************
 volatile uint32_t g_ui32SysTickCount;
 
-//*****************************************************************************
+//***************************
 //
 // The number of system ticks to wait for each USB packet to be sent before
 // we assume the host has disconnected.  The value 50 equates to half a second.
 //
-//*****************************************************************************
+//***************************
 #define MAX_SEND_DELAY          50
 
-//*****************************************************************************
+//***************************
 //
 // This global is set to true if the host sends a request to set or clear
 // any keyboard LED.
 //
-//*****************************************************************************
+//***************************
 volatile bool g_bDisplayUpdateRequired;
 
-//*****************************************************************************
+//***************************
 //
 // This enumeration holds the various states that the keyboard can be in during
 // normal operation.
 //
-//*****************************************************************************
+//***************************
 volatile enum
 {
     //
@@ -250,19 +198,19 @@ volatile enum
 }
 g_eKeyboardState = STATE_UNCONFIGURED;
 
-//*****************************************************************************
+//***************************
 //
 // The error routine that is called if the driver library encounters an error.
 //
-//*****************************************************************************
+//***************************
 #ifdef DEBUG
 void
-__error__(char *pcFilename, uint32_t ui32Line)
+_error_(char *pcFilename, uint32_t ui32Line)
 {
 }
 #endif
 
-//*****************************************************************************
+//***************************
 //
 // Handles asynchronous events from the HID keyboard driver.
 //
@@ -279,7 +227,7 @@ __error__(char *pcFilename, uint32_t ui32Line)
 //
 // \return Returns 0 in all cases.
 //
-//*****************************************************************************
+//***************************
 uint32_t
 KeyboardHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgData,
                 void *pvMsgData)
@@ -366,7 +314,7 @@ KeyboardHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgData,
     return(0);
 }
 
-//***************************************************************************
+//*************************
 //
 // Wait for a period of time for the state to become idle.
 //
@@ -380,7 +328,7 @@ KeyboardHandler(void *pvCBData, uint32_t ui32Event, uint32_t ui32MsgData,
 //
 // \return Returns \b true on success or \b false on timeout.
 //
-//***************************************************************************
+//*************************
 bool
 WaitForSendIdle(uint_fast32_t ui32TimeoutTicks)
 {
@@ -417,11 +365,11 @@ WaitForSendIdle(uint_fast32_t ui32TimeoutTicks)
     return(false);
 }
 
-//*****************************************************************************
+//***************************
 //
 // Sends a string of characters via the USB HID keyboard interface.
 //
-//*****************************************************************************
+//***************************
 void
 SendString(char *pcStr)
 {
@@ -511,66 +459,29 @@ SendString(char *pcStr)
     }
 }
 
-//*****************************************************************************
+//***************************
 //
 // This is the interrupt handler for the SysTick interrupt.  It is used to
 // update our local tick count which, in turn, is used to check for transmit
 // timeouts.
 //
-//*****************************************************************************
+//***************************
 void
 SysTickIntHandler(void)
 {
     g_ui32SysTickCount++;
 }
 
-//*****************************************************************************
-//
-// Configure the UART and its pins.  This must be called before UARTprintf().
-//
-//*****************************************************************************
-void
-ConfigureUART(void)
+
+int generateRandomNumber()
 {
-    //
-    // Enable the GPIO Peripheral used by the UART.
-    //
-    MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-
-    //
-    // Enable UART0.
-    //
-    MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
-
-    //
-    // Configure GPIO Pins for UART mode.
-    //
-    MAP_GPIOPinConfigure(GPIO_PA0_U0RX);
-    MAP_GPIOPinConfigure(GPIO_PA1_U0TX);
-    MAP_GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
-
-    //
-    // Use the internal 16MHz oscillator as the UART clock source.
-    //
-    UARTClockSourceSet(UART0_BASE, UART_CLOCK_PIOSC);
-
-    //
-    // Initialize the UART for console I/O.
-    //
-    UARTStdioConfig(0, 115200, 16000000);
+    return rand() % 9000 + 1000; // Generates a random number between 1000 and 9999
 }
-
-//*****************************************************************************
-//
-// This is the main loop that runs the application.
-//
-//*****************************************************************************
-int
-main(void)
+void main(void)
 {
     uint_fast32_t ui32LastTickCount;
     bool bLastSuspend;
-
+    srand(time(NULL));
     //
     // Enable lazy stacking for interrupt handlers.  This allows floating-point
     // instructions to be used within interrupt handlers, but at the expense of
@@ -584,15 +495,7 @@ main(void)
     MAP_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
                        SYSCTL_XTAL_16MHZ);
 
-    //
-    // Initialize the UART and display initial message.
-    //
-    ConfigureUART();
-    UARTprintf("usb-dev-keyboard example\n\r");
 
-    //
-    // Configure the required pins for USB operation.
-    //
     MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
     MAP_GPIOPinTypeUSBAnalog(GPIO_PORTD_BASE, GPIO_PIN_4 | GPIO_PIN_5);
 
@@ -604,9 +507,6 @@ main(void)
         HWREG(GPIO_PORTB_BASE + GPIO_O_PDR) |= GPIO_PIN_1;
     }
 
-    //
-    // Enable the GPIO that is used for the on-board LED.
-    //
     MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
     MAP_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_2);
     MAP_GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_2, 0);
@@ -644,7 +544,7 @@ main(void)
     MAP_SysTickPeriodSet(MAP_SysCtlClockGet() / SYSTICKS_PER_SECOND);
     MAP_SysTickIntEnable();
     MAP_SysTickEnable();
-
+    int randNum;
     //
     // The main loop starts here.  We begin by waiting for a host connection
     // then drop into the main keyboard handling section.  If the host
@@ -655,21 +555,11 @@ main(void)
         uint8_t ui8Buttons;
         uint8_t ui8ButtonsChanged;
 
-        UARTprintf("Waiting for host...\n\r");
 
-        //
-        // Wait here until USB device is connected to a host.
-        //
         while(!g_bConnected)
         {
         }
 
-        UARTprintf("Host connected.\n\r");
-        UARTprintf("Now press any button.\n\r");
-
-        //
-        // Enter the idle state.
-        //
         g_eKeyboardState = STATE_IDLE;
 
         //
@@ -682,6 +572,8 @@ main(void)
         // Keep transferring characters from the UART to the USB host for as
         // long as we are connected to the host.
         //
+        int i;
+        char null = 0x00;
         while(g_bConnected)
         {
             //
@@ -689,31 +581,11 @@ main(void)
             //
             ui32LastTickCount = g_ui32SysTickCount;
 
-            //
-            // Has the suspend state changed since last time we checked?
-            //
-            if(bLastSuspend != g_bSuspended)
-            {
-                //
-                // Yes, update the state on the terminal.
-                //
-                bLastSuspend = g_bSuspended;
-                if(bLastSuspend)
-                {
-                    UARTprintf("Bus suspended ...\n\r");
-                }
-                else
-                {
-                    UARTprintf("Host connected ...\n\r");
-                }
-            }
 
-            //
-            // See if the button was just pressed.
-            //
             ui8Buttons = ButtonsPoll(&ui8ButtonsChanged, 0);
             if(BUTTON_PRESSED(LEFT_BUTTON, ui8Buttons,
-                              ui8ButtonsChanged))
+                    ui8ButtonsChanged))
+            //if(GPIO_PORTF_DATA_R & 0X10 == 0X00 )
             {
                 //
                 // If the bus is suspended then resume it.  Otherwise, type
@@ -726,12 +598,15 @@ main(void)
                 }
                 else
                 {
-                    SendString("You have pressed the SW1 button.\n"
-                               "Try pressing the SW2 button.\n\n");
+                    randNum = generateRandomNumber();
+                    char otp[10];
+                    sprintf(otp , "%d" , randNum);
+
+                    SendString(" \n OTP GENERATED  ");
+                    SendString(otp);
                 }
             }
-            else if(BUTTON_PRESSED(RIGHT_BUTTON, ui8Buttons,
-                                   ui8ButtonsChanged))
+            else if((GPIO_PORTF_DATA_R & 0X01) == 0X00 )
             {
                 //
                 // If the bus is suspended then resume it.  Otherwise, type
@@ -744,9 +619,14 @@ main(void)
                 }
                 else
                 {
-                    SendString("You have pressed the SW2 button.\n"
-                               "Try pressing the Caps Lock key on your "
-                               "keyboard and then press either button.\n\n");
+
+
+                    SendString("Y");
+                    for(i=0;i<800;i++)
+                    {
+                        SendString(null);
+                    }
+
                 }
             }
 
